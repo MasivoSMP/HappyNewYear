@@ -11,6 +11,7 @@ import com.xSavior_of_God.HappyNewYear.commands.Command;
 import com.xSavior_of_God.HappyNewYear.events.HappyNewYearListeners;
 import com.xSavior_of_God.HappyNewYear.hooks.imagefireworksreborn.ImageFireworksRebornHook;
 import com.xSavior_of_God.HappyNewYear.manager.WorldManager;
+import com.xSavior_of_God.HappyNewYear.scheduler.SchedulerAdapter;
 import com.xSavior_of_God.HappyNewYear.tasks.AlwaysNightTask;
 import com.xSavior_of_God.HappyNewYear.tasks.Task;
 import com.xSavior_of_God.HappyNewYear.utils.ColoredLogger;
@@ -22,6 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class HappyNewYear extends JavaPlugin {
     public static HappyNewYear instance;
     public static ColoredLogger internalLogger;
+    public static SchedulerAdapter scheduler;
     public static boolean
             enabled,
             forceStart,
@@ -52,6 +54,7 @@ public class HappyNewYear extends JavaPlugin {
     public void onEnable() {
         instance = this;
         internalLogger = new ColoredLogger("[HappyNewYear] ");
+        scheduler = new SchedulerAdapter(this);
         Utils.log("\r\n" +
                 "\r\n" +
                 "\r\n"
@@ -102,6 +105,7 @@ public class HappyNewYear extends JavaPlugin {
 
         if (enabled) {
             fireworkTask = new Task(spawnAnimationType, hourlyDuration, hourlyTimezone);
+            fireworkTask.startForOnlinePlayers();
             if (wm.getAlwaysNightEnabled() || wm.getInRealLifeEnabled())
                 this.alwaysNightTask = new AlwaysNightTask();
         } else {
@@ -110,6 +114,9 @@ public class HappyNewYear extends JavaPlugin {
     }
 
     public void onDisable() {
+        if (scheduler != null) {
+            scheduler.cancelAll();
+        }
         if ((this.alwaysNightTask != null || wm.getAlwaysNightEnabled()) && this.alwaysNightTask != null)
             this.alwaysNightTask.StopTask();
         if ((this.fireworkTask != null || enabled) && this.fireworkTask != null)
@@ -117,6 +124,10 @@ public class HappyNewYear extends JavaPlugin {
         imageFireworksRebornHook = null;
         fireworkHooks.clear();
         Utils.log("&eHappy New Year &cDisabled!");
+    }
+
+    public Task getFireworkTask() {
+        return fireworkTask;
     }
 
     private void loadConfig() {

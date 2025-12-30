@@ -126,9 +126,7 @@ public class Reload {
         }
 
         Plugin finalTarget = target;
-        Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugins()[0], () -> {
-            loadCommands(finalTarget);
-        }, 10L);
+        Bukkit.getGlobalRegionScheduler().runDelayed(finalTarget, task -> loadCommands(finalTarget), 10L);
     }
 
     public static List<Map.Entry<String, Command>> getCommandsFromPlugin(Plugin plugin) {
